@@ -1,70 +1,82 @@
 package com.environment.environment.config;
 
-
 import com.environment.environment.config.jwt.JwtAccessDeniedHandler;
 import com.environment.environment.config.jwt.JwtAuthenticationEntryPoint;
-import com.environment.environment.config.jwt.JwtSecurityConfig;
-import com.environment.environment.config.jwt.TokenProvider;
+import com.environment.environment.config.jwt.JwtAuthenticationFilter;
+import com.environment.environment.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.filter.CorsFilter; // 이 부분이 org.apache.catalina.filters.CorsFilter가 아니어야 합니다
 
 @Configuration
+@EnableWebSecurity // Spring Security 설정 클래스
+@EnableGlobalMethodSecurity(securedEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final TokenProvider tokenProvider;
-    private final CorsFilter corsFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    private final JwtTokenProvider jwtTokenProvider;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder encoder() {
+        // 비밀번호를 DB에 저장하기 전 사용할 암호화
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        // ACL(Access Control List, 접근 제어 목록)의 예외 URL 설정
+        return (web)
+                -> web
+                .ignoring()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()); // 정적 리소스들
+    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // CSRF 설정 Disable
-        http.csrf().disable()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // 인터셉터로 요청을 안전하게 보호하는 방법 설정
+        http
+                // jwt 토큰 사용을 위한 설정
+                .csrf().disable()
+                .httpBasic().disable()
+                .formLogin().disable()
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
-
-                // exception handling 할 때 우리가 만든 클래스를 추가
+                // 예외 처리
+                .and()
                 .exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(jwtAccessDeniedHandler)
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint) //customEntryPoint
+                .accessDeniedHandler(jwtAccessDeniedHandler) // cutomAccessDeniedHandler
+
+                .and()
+                .authorizeRequests() // '인증'이 필요하다
+                .antMatchers("/api/mypage/**").authenticated() // 마이페이지 인증 필요
+                .antMatchers("/api/admin/**").hasRole("ADMIN") // 관리자 페이지
+                .anyRequest().permitAll()
 
                 .and()
                 .headers()
-                .frameOptions()
-                .sameOrigin()
-
-                // 시큐리티는 기본적으로 세션을 사용
-                // 여기서는 세션을 사용하지 않기 때문에 세션 설정을 Stateless 로 설정
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
-                // 로그인, 회원가입 API 는 토큰이 없는 상태에서 요청이 들어오기 때문에 permitAll 설정
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/search").permitAll()
-                .anyRequest().authenticated()   // 나머지 API 는 전부 인증 필요
-
-                // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용
-                .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .frameOptions().sameOrigin();
 
         return http.build();
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
 }

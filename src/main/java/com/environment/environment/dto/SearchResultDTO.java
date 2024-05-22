@@ -18,4 +18,3 @@ public class SearchResultDTO {
         this.items = items;
     }
 }
-

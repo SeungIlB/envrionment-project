@@ -3,6 +3,9 @@ server:
   port: 8080
 
 spring:
+  redis:
+    host: localhost # ???? ??? ? ?? localhost? ??
+    port: 6379
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -18,14 +21,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
-logging:
-  level:
-    com.tutorial: debug
+jwt:
+  secret: c3ByaW5nYm9vdC1qd3QtdHV0b3JpYWwtc3ByaW5nYm9vdC1qd3QtdHV0b3JpYWwtc3ByaW5nYm9vdC1qd3QtdHV0b3JpYWwK
+  access-token-validity-in-seconds: 86400000 # 24??
+  refresh-token-validity-in-seconds: 604800000 # 7?
 
 google:
   api:
     key: AIzaSyBXsrMGgsgC9cQevkOJQHhkhrZ50W6-Kg0
   cse:
     id: 7206c8d73d26d4356
-jwt:
-  secret: c3ByaW5nYm9vdC1qd3QtdHV0b3JpYWwtc3ByaW5nYm9vdC1qd3QtdHV0b3JpYWwtc3ByaW5nYm9vdC1qd3QtdHV0b3JpYWwK
