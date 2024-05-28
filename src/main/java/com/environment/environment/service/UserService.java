@@ -42,14 +42,12 @@ public class UserService {
         String newPassword = encodedPassword;
         String newName = updateDto.getName();
         String newNickname = updateDto.getNickname();
-        String newAddress = updateDto.getAddress();
         String newPhone = updateDto.getPhone();
 
         user.setUsername(newUsername);
         user.setPassword(newPassword);
         user.setName(newName);
         user.setNickname(newNickname);
-        user.setAddress(newAddress);
         user.setPhone(newPhone);
         userRepository.save(user);
     }

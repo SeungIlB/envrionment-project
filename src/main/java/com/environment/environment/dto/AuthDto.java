@@ -28,8 +28,6 @@ public class AuthDto {
         private String password;
         private String name;
         private String nickname;
-        private Date birthdate;
-        private String address;
         private String phone;
 
         @Builder
@@ -44,8 +42,6 @@ public class AuthDto {
             newSignupDto.password = encodedPassword;
             newSignupDto.name = signupDto.getName();
             newSignupDto.nickname = signupDto.getNickname();
-            newSignupDto.birthdate = signupDto.getBirthdate();
-            newSignupDto.address = signupDto.getAddress();
             newSignupDto.phone = signupDto.getPhone();
             return newSignupDto;
         }

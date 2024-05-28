@@ -22,10 +22,10 @@ public class Board {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String title;
 
-    @Column
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column

@@ -29,7 +29,7 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<Board> getBoardByTitle(@PathVariable Long boardId) {
+    public ResponseEntity<Board> getBoardById(@PathVariable Long boardId) {
         return boardService.getBoardById(boardId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

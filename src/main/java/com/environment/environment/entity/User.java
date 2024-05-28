@@ -51,8 +51,6 @@ public class User {
         user.password = signupDto.getPassword();
         user.name = signupDto.getName();
         user.nickname = signupDto.getNickname();
-        user.birthdate = signupDto.getBirthdate();
-        user.address = signupDto.getAddress();
         user.phone = signupDto.getPhone();
         user.role = Role.USER;
 
@@ -62,4 +60,6 @@ public class User {
         this.boards.add(board);
         board.setUser(this); // 보드의 사용자 정보를 설정합니다.
     }
+
+
 }
