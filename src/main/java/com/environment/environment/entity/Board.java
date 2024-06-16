@@ -37,5 +37,14 @@ public class Board {
     @Column
     private LocalDateTime updatedTime;
 
+    @PrePersist
+    protected void onCreate() {
+        postedTime = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedTime = LocalDateTime.now();
+    }
 
 }

@@ -6,6 +6,8 @@ import com.environment.environment.entity.User;
 import com.environment.environment.repository.BoardRepository;
 import com.environment.environment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,10 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
-    public List<Board> readAllBoard() {
-        return boardRepository.findAll();
+    @Transactional
+    public Page<Board> readAllBoard(Pageable pageable) {
+        return boardRepository.findAll(pageable);
     }
-
     @Transactional
     public Optional<Board> getBoardById(Long boardId) {
         return boardRepository.findById(boardId);

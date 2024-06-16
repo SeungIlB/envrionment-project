@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final EntityManager entityManager;
+    private final PasswordEncoder encoder;
+
 
     @Transactional
     public void registerUser(AuthDto.SignupDto signupDto) {
@@ -36,6 +39,14 @@ public class UserService {
     public void updateUser(Long userId, AuthDto.UpdateDto updateDto, String encodedPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        // 아이디 및 닉네임 중복 확인
+        if (!user.getUsername().equals(updateDto.getUsername()) && isUsernameTaken(updateDto.getUsername())) {
+            throw new IllegalArgumentException("Username already taken");
+        }
+
+        if (!user.getNickname().equals(updateDto.getNickname()) && isNicknameTaken(updateDto.getNickname())) {
+            throw new IllegalArgumentException("Nickname already taken");
+        }
 
         // UpdateDto로부터 업데이트할 사용자 정보 가져오기
         String newUsername = updateDto.getUsername();
@@ -96,5 +107,12 @@ public class UserService {
         } catch (NoResultException e) {
             throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username);
         }
+    }
+    public boolean isUsernameTaken(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+    public boolean isNicknameTaken(String nickname) {
+        return userRepository.findByNickname(nickname).isPresent();
     }
 }

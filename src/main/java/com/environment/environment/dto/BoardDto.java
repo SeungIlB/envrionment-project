@@ -33,15 +33,19 @@ public class BoardDto {
         private String title;
         private String content;
         private String writer;
+        private Long userId; // 작성자의 userId 필드 추가
         private LocalDateTime createdDate;
         private LocalDateTime modifiedDate;
-        public PostDetailsDTO(Long id, String title, String content, String writer, LocalDateTime createdDate, LocalDateTime modifiedDate) {
+
+        public PostDetailsDTO(Long id, String title, String content, String writer, Long userId, LocalDateTime createdDate, LocalDateTime modifiedDate) {
             this.id = id;
             this.title = title;
             this.content = content;
             this.writer = writer;
+            this.userId = userId; // 생성자에 userId 추가
             this.createdDate = createdDate;
             this.modifiedDate = modifiedDate;
         }
+
     }
 }

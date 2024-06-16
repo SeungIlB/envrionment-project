@@ -55,14 +55,13 @@ public class AuthApiController {
                 // AT 저장
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDto.getAccessToken()).body(Map.of(
                         "accessToken", tokenDto.getAccessToken(),
-                        "userid", userid));
+                        "userId", userid));
     }
     @PutMapping("/update/{userId}")
     public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody AuthDto.UpdateDto updateDto) {
-
         try {
-            String encodedPassword = encoder.encode(updateDto.getPassword()); // 비밀번호 암호화
-            userService.updateUser(userId, updateDto,encodedPassword);
+            String encodedPassword = encoder.encode(updateDto.getNewPassword()); // 새로운 비밀번호 암호화
+            userService.updateUser(userId, updateDto, encodedPassword);
             return ResponseEntity.ok("사용자 정보가 성공적으로 업데이트되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -140,17 +139,22 @@ public class AuthApiController {
     public ResponseEntity<?> loadMyPage(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 현재 로그인한 사용자의 ID 가져오기
         Long loggedInUserId = userService.getLoggedInUserId(userDetails);
+        System.out.println("LoggedInUserId: " + loggedInUserId);
+        System.out.println("RequestedUserId: " + userId);
 
         // 요청한 사용자와 현재 로그인한 사용자의 ID가 일치하지 않는 경우 권한이 없는 것으로 처리
         if (!userId.equals(loggedInUserId)) {
+            System.out.println("Unauthorized access attempt");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // userId를 이용하여 사용자 정보를 데이터베이스에서 조회합니다.
         User user = userService.getUserById(userId);
+        System.out.println("User: " + user);
 
         // 사용자 정보가 존재하지 않는 경우 404 에러를 반환합니다.
         if (user == null) {
+            System.out.println("User not found");
             return ResponseEntity.notFound().build();
         }
 

@@ -34,8 +34,7 @@ public class User {
     private String password; // Credential
     private String name;
     private String nickname;
-    private Date birthdate;
-    private String address;
+
     private String phone;
     @Enumerated(EnumType.STRING)
     private Role role; // 사용자 권한
